@@ -30,26 +30,30 @@ app.get("/", (req, res) => {
 
 app.get("/user", async (req, res) => {
   const profileSlug = req.query.profileSlug;
-  const user = await axios.get(`https://api.iwara.tv/profile/${profileSlug}`);
-  const idUser = user.data.user.id;
-  const videoDetails = [];
-  let page = 0;
-  while (true) {
-    const videos = await axios.get(
-      `https://api.iwara.tv/videos?sort=date&page=${page}&user=${idUser}`,
-    );
-    if (videos.data.results.length === 0) {
-      break;
-    }
-    videos.data.results.forEach((video) => {
-      videoDetails.push({
-        id: video.id,
-        title: video.title,
+  try {
+    const user = await axios.get(`https://api.iwara.tv/profile/${profileSlug}`);
+    const idUser = user.data.user.id;
+    const videoDetails = [];
+    let page = 0;
+    while (true) {
+      const videos = await axios.get(
+        `https://api.iwara.tv/videos?sort=date&page=${page}&user=${idUser}`,
+      );
+      if (videos.data.results.length === 0) {
+        break;
+      }
+      videos.data.results.forEach((video) => {
+        videoDetails.push({
+          id: video.id,
+          title: video.title,
+        });
       });
-    });
-    page++;
+      page++;
+    }
+    res.send(JSON.stringify(videoDetails));
+  } catch (error) {
+    res.status(500).send(error);
   }
-  res.send(JSON.stringify(videoDetails));
 });
 app.get("/video", async (req, res) => {
   const videoId = req.query.id;
